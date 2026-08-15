@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Désamorceur de Câbles - ChoixUnique</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background-color: #2d2d2d;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            width: 400px;
+        }
+        h2 {
+            text-align: center;
+            color: #ffcc00;
+            margin-top: 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select {
+            width: 100%;
+            padding: 8px;
+            background-color: #3d3d3d;
+            color: #ffffff;
+            border: 1px solid #555;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #c0392b;
+        }
+        #resultat {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #1a1a1a;
+            border-left: 5px solid #ffcc00;
+            border-radius: 4px;
+            font-size: 15px;
+            min-height: 40px;
+            word-break: break-word;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Désamorceur</h2>
+    
+    <div class="form-group">
+        <label for="rouge">Fil ROUGE (🔴) :</label>
+        <select id="rouge">
+            <option value="B">Good Condition / Bon état</option>
+            <option value="E">Frayed / Effiloché</option>
+            <option value="M">Loose / Mal branché ou Desserré</option>
+            <option value="U">Scorched / Brûlé</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="bleu">Fil BLEU (🔵) :</label>
+        <select id="bleu">
+            <option value="B">Good Condition / Bon état</option>
+            <option value="E">Frayed / Effiloché</option>
+            <option value="M">Loose / Mal branché ou Desserré</option>
+            <option value="U">Scorched / Brûlé</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="jaune">Fil JAUNE (🟡) :</label>
+        <select id="jaune">
+            <option value="B">Good Condition / Bon état</option>
+            <option value="E">Frayed / Effiloché</option>
+            <option value="M">Loose / Mal branché ou Desserré</option>
+            <option value="U">Scorched / Brûlé</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="noir">Fil NOIR (⚫) :</label>
+        <select id="noir">
+            <option value="B">Good Condition / Bon état</option>
+            <option value="E">Frayed / Effiloché</option>
+            <option value="M">Loose / Mal branché ou Desserré</option>
+            <option value="U">Scorched / Brûlé</option>
+        </select>
+    </div>
+
+    <button onclick="resoudre()">Trouver la solution unique</button>
+
+    <div id="resultat">En attente de vos choix...</div>
+</div>
+
+<script>
+function resoudre() {
+    let r = document.getElementById('rouge').value;
+    let bl = document.getElementById('bleu').value;
+    let j = document.getElementById('jaune').value;
+    let n = document.getElementById('noir').value;
+
+    let resultat = "";
+
+    // Structure en cascade (if / else if) : s'arrête dès qu'une règle correspond
+    if (r === 'E' && j === 'M') {
+        resultat = "✂️ Coupez le fil NOIR (⚫) - [Règle 1]";
+    } else if (r === 'B') {
+        resultat = "✂️ Coupez le fil ROUGE (🔴) - [Règle 2]";
+    } else if (j === 'U' && bl === 'B') {
+        resultat = "✂️ Coupez le fil JAUNE (🟡) - [Règle 3]";
+    } else if (n === 'M') {
+        resultat = "✂️ Coupez le fil BLEU (🔵) - [Règle 4]";
+    } else if (r === 'E' && j === 'B' && bl === 'M' && n === 'M') {
+        resultat = "✂️ Coupez le fil ROUGE (🔴) - [Règle 5]";
+    } else if (r === 'M' && n === 'B') {
+        resultat = "✂️ Coupez le fil BLEU (🔵) - [Règle 6]";
+    } else if (r === 'M' && j === 'E' && bl === 'B' && n === 'U') {
+        resultat = "✂️ Coupez le fil NOIR (⚫) - [Règle 8]";
+    } else if (r === 'U') {
+        resultat = "✂️ Coupez le fil BLEU (🔵) - [Règle 10]";
+    } else if (r === 'B' && j === 'U') {
+        resultat = "✂️ Coupez le fil NOIR (⚫) - [Règle 11]";
+    } else if (bl === 'E' && n === 'U') {
+        resultat = "✂️ Coupez le fil ROUGE (🔴) - [Règle 12]";
+    } else if (j === 'B' && bl === 'M') { // Règle 15 placée avant la 13 pour éviter les conflits
+        resultat = "✂️ Coupez le fil ROUGE (🔴) - [Règle 15]";
+    } else if (r === 'M' && n !== 'E') { // Règle 13
+        resultat = "✂️ Coupez le fil JAUNE (🟡) - [Règle 13]";
+    } else if (r === 'B' && j === 'E' && n === 'M') { // Règle 14
+        resultat = "✂️ Coupez le fil BLEU (🔵) - [Règle 14]";
+    } else if (r === 'E' && bl === 'M' && j === 'U') { // Règle 16
+        resultat = "✂️ Coupez le fil JAUNE (🟡) - [Règle 16]";
+    } else if (r === 'B' && j === 'B' && bl === 'B' && n === 'B') { // Règle 17
+        resultat = "✅ Aucun fil à couper - [Règle 17]";
+    } else {
+        resultat = "🎲 Action Aléatoire - [Règle 18]";
+    }
+
+    document.getElementById('resultat').innerText = resultat;
+}
+</script>
+
+</body>
+</html>
