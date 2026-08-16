@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/png" href="https://cdn.discordapp.com/attachments/986188390418501663/1538473792458854430/mine.png?ex=6a82cedf&is=6a817d5f&hm=8e77a5b545818dc8d5ff09307ab31dc6cc26dc8efd5039a4a0bef7913c1bd70f&">
+    <title>EOD - Système de Désamorçage Tactique</title>
+    <style>
+        :root {
+            --bg-base: #0a0d08;
+            --panel-bg: #141b12;
+            --border-tactical: #3a4d31;
+            --accent-orange: #d35400;
+            --accent-yellow: #f1c40f;
+            --text-main: #c8d6c5;
+            --text-dim: #7f8c8d;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.4) 50%, rgba(10,30,10,0.1) 50%),
+                radial-gradient(circle, #182214 0%, #0a0d08 100%);
+            background-size: 100% 4px, 100% 100%;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+            width: 100%;
+            max-width: 900px;
+            align-items: flex-start;
+        }
+
+        .left-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: rgba(10, 13, 8, 0.95);
+            padding: 8px;
+            border: 1px solid var(--border-tactical);
+            border-radius: 6px;
+            width: 120px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            z-index: 1000;
+        }
+
+        .content-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 0;
+        }
+
+        .nav-btn {
+            background-color: #141b12;
+            color: var(--text-dim);
+            border: 1px solid var(--border-tactical);
+            padding: 8px 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 9px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            transition: all 0.2s;
+            text-align: center;
+            width: 100%;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover, .nav-btn:active {
+            border-color: var(--accent-orange);
+            color: var(--text-main);
+            background-color: #1f2a1b;
+        }
+
+        .nav-btn.active {
+            background-color: var(--accent-orange);
+            color: #ffffff;
+            border-color: var(--accent-yellow);
+            box-shadow: 0 0 10px rgba(211, 84, 0, 0.5);
+        }
+
+        .main-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .card {
+            background-color: var(--panel-bg);
+            padding: 15px;
+            border: 2px solid var(--border-tactical);
+            border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0,0,0,0.6);
+            width: 100%;
+            position: relative;
+        }
+
+        .card::before {
+            content: "● LIVE // PROTOCOLE EOD-SEC-CIVIL";
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: var(--border-tactical);
+            color: #fff;
+            font-size: 8px;
+            padding: 2px 6px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            border-radius: 2px;
+        }
+
+        .side-rules-panel {
+            background-color: var(--panel-bg);
+            border: 2px solid var(--border-tactical);
+            border-radius: 6px;
+            width: 100%;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0,0,0,0.6);
+            position: relative;
+        }
+
+        .side-rules-panel::before {
+            content: "● RÈGLES APPLIQUÉES";
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: var(--border-tactical);
+            color: #fff;
+            font-size: 8px;
+            padding: 2px 6px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            border-radius: 2px;
+        }
+
+        .side-counter-panel::before {
+            content: "● STATISTIQUES";
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: var(--border-tactical);
+            color: #fff;
+            font-size: 8px;
+            padding: 2px 6px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            border-radius: 2px;
+        }
+
+        .side-rules-title {
+            color: var(--accent-orange);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed var(--border-tactical);
+            padding-bottom: 6px;
+            text-align: center;
+        }
+
+        .rules-content-box {
+            background-color: #070905;
+            border: 1px solid var(--border-tactical);
+            padding: 10px;
+            border-radius: 3px;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #a8bfa0;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .rule-entry {
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px dotted #22331c;
+            color: var(--accent-yellow);
+        }
+
+        .banner-container {
+            position: relative;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid var(--border-tactical);
+            background-color: #000;
+        }
+
+        .tactical-banner {
+            width: 100%;
+            height: auto;
+            display: block;
+            filter: contrast(110%) brightness(95%) saturate(90%);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--accent-orange);
+            margin: 0 0 12px 0;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 15px;
+            border-bottom: 1px dashed var(--border-tactical);
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: bold;
+            color: #9cb595;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        select, input[type="number"], input[type="text"], input[type="password"], input[type="datetime-local"], textarea {
+            width: 100%;
+            padding: 10px;
+            background-color: #080b06;
+            color: #ecf0f1;
+            border: 1px solid var(--border-tactical);
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-yellow);
+            box-shadow: 0 0 8px rgba(241, 196, 15, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #c0392b, #962d22);
+            color: white;
+            border: 1px solid #e74c3c;
+            border-radius: 3px;
+            font-size: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(192, 57, 43, 0.3);
+        }
+
+        #resultat, #resultat-pipe {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #070905;
+            border-left: 4px solid var(--accent-yellow);
+            border: 1px solid var(--border-tactical);
+            border-radius: 3px;
+            font-size: 11px;
+            word-break: break-word;
+            color: var(--accent-yellow);
+            line-height: 1.4;
+        }
+
+        #resultat ul, #resultat-pipe ul {
+            margin: 5px 0 0 12px;
+            padding: 0;
+        }
+
+        #resultat li, #resultat-pipe li {
+            margin-bottom: 4px;
+        }
+
+        .page-section {
+            display: none;
+        }
+        .page-section.active {
+            display: block;
+        }
+
+        .manual-box {
+            background-color: #070905;
+            border: 1px solid var(--border-tactical);
+            padding: 12px;
+            border-radius: 3px;
+            max-height: 65vh;
+            overflow-y: auto;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #a8bfa0;
+        }
+
+        .manual-box h3 {
+            color: var(--accent-yellow);
+            margin-top: 0;
+            font-size: 12px;
+            border-bottom: 1px dotted var(--border-tactical);
+            padding-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .manual-box h4 {
+            color: var(--accent-orange);
+            margin: 10px 0 4px 0;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .manual-box p {
+            margin: 4px 0;
+        }
+
+        .manual-box ul {
+            padding-left: 12px;
+            margin: 4px 0;
+        }
+
+        .reminder-box {
+            background: rgba(211, 84, 0, 0.1);
+            border-left: 3px solid var(--accent-orange);
+            padding: 8px;
+            margin-bottom: 10px;
+            font-size: 10px;
+            color: #e0be9b;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 15px;
+        }
+
+        .modal-window {
+            border: 2px solid var(--accent-orange);
+            background-color: var(--panel-bg);
+            width: 100%;
+            max-width: 350px;
+            padding: 15px;
+            box-shadow: 0 0 15px rgba(211, 84, 0, 0.3);
+            text-align: center;
+        }
+
+        .modal-title {
+            color: var(--accent-orange);
+            font-size: 12px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-text {
+            font-size: 11px;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        .modal-input {
+            background-color: #080b06;
+            border: 1px solid var(--border-tactical);
+            color: var(--accent-yellow);
+            padding: 8px;
+            width: 100%;
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace;
+            margin-bottom: 10px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .modal-btn {
+            background-color: #141b12;
+            border: 1px solid var(--border-tactical);
+            color: var(--accent-yellow);
+            padding: 8px 12px;
+            cursor: pointer;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 10px;
+            width: auto;
+            margin-top: 0;
+            box-shadow: none;
+        }
+
+        .modal-error {
+            color: #e74c3c;
+            font-size: 10px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .briefing-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 5px;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+            .app-container {
+                gap: 15px;
+                max-width: 950px;
+            }
+            .left-nav {
+                width: 135px;
+                padding: 10px;
+                gap: 8px;
+            }
+            .nav-btn {
+                padding: 10px 6px;
+                font-size: 10px;
+            }
+            .briefing-layout {
+                display: grid;
+                grid-template-columns: 260px 1fr;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Navigation Latérale à Gauche -->
+    <div class="left-nav" id="leftNav">
+        <button class="nav-btn active" id="btn-page1" onclick="changerPage(1)">[01] Manuel</button>
+        <button class="nav-btn" id="btn-page2" onclick="changerPage(2)">[02] IED Cable</button>
+        <button class="nav-btn" id="btn-page3" onclick="changerPage(3)">[03] IED Tuyaux</button>
+        <button class="nav-btn" id="btn-page4" onclick="changerPage(4)">[04] Briefing</button>
+        <button class="nav-btn" id="btn-page5" onclick="changerPage(5)">[05] Stats</button>
+        <button class="nav-btn" id="btn-page6" onclick="changerPage(6)" style="border-color: var(--accent-orange);">[06] Admin</button>
+    </div>
+
+    <!-- Zone de Contenu Principale -->
+    <div class="content-area">
+        <div class="main-layout">
+            <div class="card" id="mainCard">
+                <!-- PAGE 1 : MANUEL -->
+                <div id="page1" class="page-section active">
+                    <h2>Manuel de Référence</h2>
+                    <div class="manual-box">
+                        <h3>📖 Procédure Opérationnelle Standardisée (SOP) : Protocole d'Intervention EOD en 6 Étapes</h3>
+                        <div class="reminder-box">
+                            <strong>⚠️ RAPPEL TACTIQUE :</strong> Cette procédure s'applique lors d'une reconnaissance offensive ou d'une sécurisation de zone sensible par les opérateurs du Commando Hubert. L'exécution rigoureuse de chaque étape conditionne la survie du groupe.
+                        </div>
+
+                        <h4>🔍 Étape 1 : Le détecteur de mine</h4>
+                        <p>Phase de détection initiale et de balayage de la zone suspecte.</p>
+                        <ul>
+                            <li><strong>Matériel employé :</strong> Détecteur de métaux à induction d'impulsions à haute sensibilité et perche de sondage amagnétique.</li>
+                            <li><strong>Technique de balayage :</strong> Progression lente en "crabe", la tête de détection maintenue à environ 10 à 15 cm du sol, décrivant un arc de cercle régulier.</li>
+                            <li><strong>Sécurité :</strong> Au moindre signal sonore ou visuel, l'opérateur stoppe immédiatement toute progression, pose un genou à terre et signale l'anomalie au binôme en couverture.</li>
+                        </ul>
+
+                        <h4>🎯 Étape 2 : L'identification de la mine</h4>
+                        <p>Analyse visuelle et morphologique de la menace découverte. Classification rapide de la munition ou du dispositif pour adapter la riposte :</p>
+                        <ul>
+                            <li><strong>Mine anti-personnel (AP) :</strong> Souvent à déclenchement par pression ou tension (ex. : type M14, PMN), charge fragmentaire ou blast.</li>
+                            <li><strong>Mine anti-char (AC) :</strong> Forte charge explosive, déclenchement par pression lourde ou capteur magnétique.</li>
+                            <li><strong>Engin Explosif Improvisé (IED) :</strong> Assemblage hétérogène, fils apparents, source d'énergie visible (pile, platine électronique).</li>
+                            <li><strong>IED Tuyaux (Pipe Bomb) :</strong> Corps tubulaire métallique scellé aux extrémités, amorçage souvent pyrotechnique ou mèche lente.</li>
+                        </ul>
+
+                        <h4>📡 Étape 3 : Le signalement de la mine</h4>
+                        <p>Transmission des données tactiques et sécurisation immédiate.</p>
+                        <ul>
+                            <li><strong>Balisage visuel et olfactif/tactile :</strong> Pose d'un marquage de danger réglementaire (ruban de balayage rouge et blanc ou piquet de repérage) sans exercer de pression sur le sol environnant.</li>
+                            <li><strong>Compte rendu radio (CR) :</strong> Transmission chiffrée au PC tactique incluant : la position GPS précise, la typologie exacte identifiée à l'étape 2, et l'estimation du danger collatéral et du rayon d'exclusion nécessaire.</li>
+                        </ul>
+
+                        <h4>📖 Étape 4 : Prise du manuel</h4>
+                        <p>Consultation de la documentation technique de référence (Mémento EOD).</p>
+                        <ul>
+                            <li><strong>Recherche de la fiche technique :</strong> L'opérateur consulte la section du manuel dédiée au modèle exact identifié pour connaître : la structure interne et le type d'explosif utilisé (composition B, TNT, etc.), la présence éventuelle de dispositifs anti-manipulation ou de pièges secondaires, et la méthode de neutralisation homologuée (mécanique ou à distance).</li>
+                        </ul>
+
+                        <h4>✂️ Étape 5 : Désamorçage</h4>
+                        <p>Exécution de la procédure de neutralisation validée par le manuel.</p>
+                        <ul>
+                            <li><strong>Option prioritaire :</strong> Neutralisation à distance par moyen hydro-abrasif ou contre-charge explosive pour détruire le mécanisme de mise à feu.</li>
+                            <li><strong>Option manuelle (si requis) :</strong> Mise en place des outils amagnétiques, neutralisation des goupilles de sécurité ou sectionnement minutieux des lignes identifiées, isolation du détonateur par rapport à la charge principale.</li>
+                        </ul>
+
+                        <h4>📦 Étape 6 : Récupération (si possible) de l'objet explosif</h4>
+                        <p>Exploitation du matériel neutralisé à des fins de renseignement.</p>
+                        <ul>
+                            <li><strong>Conditionnement :</strong> Si l'état de l'engin le permet et que les ordres du commandement l'exigent, les composants non explosifs ou les platines électroniques désarmées sont prélevés.</li>
+                            <li><strong>Transport sécurisé :</strong> Placement dans un conteneur anti-déflagration ou un sac de transport homologué pour analyse par les services de renseignement technique (INTEL).</li>
+                            <li><strong>Clôture :</strong> Transmission du rapport de fin d'intervention et reprise de la progression tactique.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- PAGE 2 : IED CABLE -->
+                <div id="page2" class="page-section">
+                    <div class="form-group" style="margin-bottom: 15px; border-bottom: 1px dashed var(--border-tactical); padding-bottom: 10px;">
+                        <label for="operatorName2" style="font-size: 10px; margin-bottom: 4px; color: var(--accent-orange);">Opérateur Actif :</label>
+                        <select id="operatorName2" onchange="changerOperateur('operatorName2')" style="padding: 8px; font-size: 12px;">
+                            <option value="GCA-1 : Zero Azur">GCA-1 : Zero Azur</option>
+                            <option value="GCA-2 : Matt du 83">GCA-2 : Matt du 83</option>
+                            <option value="GCA-3 : Wolf">GCA-3 : Wolf</option>
+                            <option value="GCA-4 : Nico">GCA-4 : Nico</option>
+                            <option value="GCA-5 : Brindas">GCA-5 : Brindas</option>
+                            <option value="GCA-6 : Devil">GCA-6 : Devil</option>
+                            <option value="GCA-7 : Antoine">GCA-7 : Antoine</option>
+                            <option value="GCA-8 : Baguettini">GCA-8 : Baguettini</option>
+                            <option value="GCA-9 : Libre">GCA-9 : Libre</option>
+                            <option value="GCA-10 : Libre">GCA-10 : Libre</option>
+                        </select>
+                    </div>
+
+                    <div class="banner-container">
+                        <img src="https://cdn.discordapp.com/attachments/986188390418501663/1538349888285442108/image.png?ex=6a825b7a&is=6a8109fa&hm=619dc2b0e110366e73cdf6e33ae9bc4ceb23e952dafdf268d76ec8a8ce8f653b&" alt="Intervention IED Cable" class="tactical-banner">
+                    </div>
+                    
+                    <h2>Terminal de Désamorçage IED Cable</h2>
+                    
+                    <div class="form-group">
+                        <label for="rouge">Fil ROUGE (🔴) :</label>
+                        <select id="rouge" onchange="playSound('click')">
+                            <option value="B">Good Condition / Bon état</option>
+                            <option value="E">Frayed / Effiloché</option>
+                            <option value="M">Loose / Mal branché ou Desserré</option>
+                            <option value="U">Scorched / Brûlé</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bleu">Fil BLEU (🔵) :</label>
+                        <select id="bleu" onchange="playSound('click')">
+                            <option value="B">Good Condition / Bon état</option>
+                            <option value="E">Frayed / Effiloché</option>
+                            <option value="M">Loose / Mal branché ou Desserré</option>
+                            <option value="U">Scorched / Brûlé</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="jaune">Fil JAUNE (🟡) :</label>
+                        <select id="jaune" onchange="playSound('click')">
+                            <option value="B">Good Condition / Bon état</option>
+                            <option value="E">Frayed / Effiloché</option>
+                            <option value="M">Loose / Mal branché ou Desserré</option>
+                            <option value="U">Scorched / Brûlé</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="noir">Fil NOIR (⚫) :</label>
+                        <select id="noir" onchange="playSound('click')">
+                            <option value="B">Good Condition / Bon état</option>
+                            <option value="E">Frayed / Effiloché</option>
+                            <option value="M">Loose / Mal branché ou Desserré</option>
+                            <option value="U">Scorched / Brûlé</option>
+                        </select>
+                    </div>
+
+                    <button onclick="lancerAnalyse()">Exécuter l'analyse</button>
+
+                    <div id="resultat">> Système prêt. En attente des paramètres de câblage...</div>
+                </div>
+
+                <!-- PAGE 3 : IED TUYAUX -->
+                <div id="page3" class="page-section">
+                    <div class="form-group" style="margin-bottom: 15px; border-bottom: 1px dashed var(--border-tactical); padding-bottom: 10px;">
+                        <label for="operatorName3" style="font-size: 10px; margin-bottom: 4px; color: var(--accent-orange);">Opérateur Actif :</label>
+                        <select id="operatorName3" onchange="changerOperateur('operatorName3')" style="padding: 8px; font-size: 12px;">
+                            <option value="GCA-1 : Zero Azur">GCA-1 : Zero Azur</option>
+                            <option value="GCA-2 : Matt du 83">GCA-2 : Matt du 83</option>
+                            <option value="GCA-3 : Wolf">GCA-3 : Wolf</option>
+                            <option value="GCA-4 : Nico">GCA-4 : Nico</option>
+                            <option value="GCA-5 : Brindas">GCA-5 : Brindas</option>
+                            <option value="GCA-6 : Devil">GCA-6 : Devil</option>
+                            <option value="GCA-7 : Antoine">GCA-7 : Antoine</option>
+                            <option value="GCA-8 : Baguettini">GCA-8 : Baguettini</option>
+                            <option value="GCA-9 : Libre">GCA-9 : Libre</option>
+                            <option value="GCA-10 : Libre">GCA-10 : Libre</option>
+                        </select>
+                    </div>
+
+                    <div class="banner-container">
+                        <img src="https://cdn.discordapp.com/attachments/986188390418501663/1538349795377291384/image.png?ex=6a825b64&is=6a8109e4&hm=e3eb0c889190c81a566d1dd4779f0d3394d1d31b40c6c2d89edaeec95a39d9a9&" alt="IED Tuyaux EOD" class="tactical-banner">
+                    </div>
+
+                    <h2>Calculateur IED Tuyaux</h2>
+
+                    <div class="form-group">
+                        <label for="pvc">Marquage PVC (0 à 9) :</label>
+                        <input type="number" id="pvc" min="0" max="9" value="0" onchange="playSound('click')">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lot">Marquage LOT (0 à 9) :</label>
+                        <input type="number" id="lot" min="0" max="9" value="0" onchange="playSound('click')">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rev">Marquage REV :</label>
+                        <select id="rev" onchange="playSound('click')">
+                            <option value="0">A (= 0)</option>
+                            <option value="1">B (= 1)</option>
+                            <option value="2">C (= 2)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="swA">Switch A :</label>
+                        <select id="swA" onchange="playSound('click')">
+                            <option value="0">OFF</option>
+                            <option value="1">ON (= 1)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="swB">Switch B :</label>
+                        <select id="swB" onchange="playSound('click')">
+                            <option value="0">OFF</option>
+                            <option value="2">ON (= 2)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="swC">Switch C :</label>
+                        <select id="swC" onchange="playSound('click')">
+                            <option value="0">OFF</option>
+                            <option value="4">ON (= 4)</option>
+                        </select>
+                    </div>
+
+                    <button onclick="calculerBombeTuyau()">Calculer le code / action</button>
+
+                    <div id="resultat-pipe">> Entrez les paramètres de l'IED tuyaux...</div>
+                </div>
+
+                <!-- PAGE 4 : BRIEFING -->
+                <div id="page4" class="page-section">
+                    <h2>Briefing de Mission & Archives</h2>
+                    <div class="briefing-layout">
+                        <div style="background-color: #070905; border: 1px solid var(--border-tactical); padding: 10px; border-radius: 3px; display: flex; flex-direction: column; max-height: 250px;">
+                            <div style="font-size: 10px; color: var(--accent-orange); text-transform: uppercase; font-weight: bold; border-bottom: 1px dashed var(--border-tactical); padding-bottom: 4px; margin-bottom: 6px; text-align: center;">LOGS / ARCHIVES</div>
+                            <div id="briefing-log-list" style="overflow-y: auto; flex-grow: 1; font-size: 11px;"></div>
+                        </div>
+                        <div class="manual-box" id="publicBriefingView" style="max-height: 400px; line-height: 1.5; margin-bottom: 0;"></div>
+                    </div>
+                </div>
+
+                <!-- PAGE 5 : STATISTIQUES ET LOGS -->
+                <div id="page5" class="page-section">
+                    <h2>Statistiques & Logs</h2>
+                    
+                    <h3 style="color: var(--accent-orange); font-size: 12px; text-transform: uppercase; margin-top: 5px; border-bottom: 1px dotted var(--border-tactical); padding-bottom: 4px;">1. Bilan des Opérateurs</h3>
+                    <div class="manual-box" id="globalStatsBox" style="max-height: 180px; margin-bottom: 15px;"></div>
+
+                    <h3 style="color: var(--accent-orange); font-size: 12px; text-transform: uppercase; margin-top: 5px; border-bottom: 1px dotted var(--border-tactical); padding-bottom: 4px;">2. Logs Opérationnels</h3>
+                    <div class="form-group" style="margin-bottom: 6px; margin-top: 6px;">
+                        <label for="logFilter">Filtrer par opérateur :</label>
+                        <select id="logFilter" onchange="filtrerLogs()" style="padding: 6px; font-size: 11px;">
+                            <option value="ALL">Tous les opérateurs</option>
+                        </select>
+                    </div>
+                    <div class="manual-box" id="logsBox" style="max-height: 160px;"></div>
+                    <button onclick="effacerLogs()" style="margin-top: 8px; padding: 8px; font-size: 10px; background: #552222; border-color: #aa3333;">Vider les logs</button>
+                </div>
+
+                <!-- PAGE 6 : ACCÈS PROTÉGÉ -->
+                <div id="page6" class="page-section">
+                    <div id="authContainer">
+                        <h2>Accès Sécurisé - Admin</h2>
+                        <div class="manual-box" style="text-align: center; padding: 20px;">
+                            <p style="color: var(--accent-orange); margin-bottom: 12px; font-size: 11px;">🔒 Section protégée par mot de passe.</p>
+                            <div class="form-group" style="max-width: 250px; margin: 0 auto 10px auto;">
+                                <label for="pagePassword">Mot de passe :</label>
+                                <input type="password" id="pagePassword" placeholder="Mot de passe" onkeydown="if(event.key === 'Enter') verifierMotDePasse()">
+                            </div>
+                            <button onclick="verifierMotDePasse()" style="max-width: 250px; margin: 0 auto;">Déverrouiller</button>
+                            <div id="authError" style="font-size: 10px; color: #e74c3c; margin-top: 8px;"></div>
+                        </div>
+                    </div>
+
+                    <div id="briefingAdminContent" style="display: none;">
+                        <h2>Planification Briefing</h2>
+                        <div class="manual-box" style="max-height: 400px;">
+                            <div class="form-group">
+                                <label for="briefTitle">Nom de la Mission :</label>
+                                <input type="text" id="briefTitle" value="Opération Clean Sweep" oninput="sauvegarderBriefing()">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="briefDate">Date & Heure H-Hour :</label>
+                                <input type="datetime-local" id="briefDate" onchange="sauvegarderBriefing()">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="briefLeader">Commandant de Mission :</label>
+                                <select id="briefLeader" onchange="sauvegarderBriefing()">
+                                    <option value="GCA-1 : Zero Azur">GCA-1 : Zero Azur</option>
+                                    <option value="GCA-2 : Matt du 83">GCA-2 : Matt du 83</option>
+                                    <option value="GCA-3 : Wolf">GCA-3 : Wolf</option>
+                                    <option value="GCA-4 : Nico">GCA-4 : Nico</option>
+                                    <option value="GCA-5 : Brindas">GCA-5 : Brindas</option>
+                                    <option value="GCA-6 : Devil">GCA-6 : Devil</option>
+                                    <option value="GCA-7 : Antoine">GCA-7 : Antoine</option>
+                                    <option value="GCA-8 : Baguettini">GCA-8 : Baguettini</option>
+                                    <option value="GCA-9 : Libre">GCA-9 : Libre</option>
+                                    <option value="GCA-10 : Libre">GCA-10 : Libre</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="briefContext">Contexte Tactique (SITREP) :</label>
+                                <textarea id="briefContext" rows="2" oninput="sauvegarderBriefing()">Zone urbaine hautement contaminée par des engins explosifs improvisés...</textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="briefObjectives">Objectifs Principaux :</label>
+                                <textarea id="briefObjectives" rows="2" oninput="sauvegarderBriefing()">1. Infiltration discrète.\n2. Balayage des secteurs minés.</textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="briefGear">Matériel Spécifique :</label>
+                                <textarea id="briefGear" rows="2" oninput="sauvegarderBriefing()">- Détecteurs de métaux\n- Perches amagnétiques</textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="briefComms">Communications :</label>
+                                <textarea id="briefComms" rows="2" oninput="sauvegarderBriefing()">- Radio 1 (44.2 MHz)</textarea>
+                            </div>
+
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <button onclick="envoyerBriefing()" style="flex: 1; background: linear-gradient(135deg, #27ae60, #1e8449);">Publier</button>
+                                <button onclick="resetBriefing()" style="flex: 1; background: linear-gradient(135deg, #7f8c8d, #626d6e);">Reset</button>
+                            </div>
+                            <div id="briefingStatus" style="font-size: 10px; color: var(--accent-yellow); margin-top: 6px; text-align: center;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANNEAU LATÉRAL UNIQUE (COMPTEUR + RÈGLES) : Affiché uniquement sur les pages 2 et 3 -->
+            <div class="right-column" id="rightColumnContainer" style="display: none; width: 100%;">
+                <div class="side-rules-panel side-counter-panel" style="margin-bottom: 15px;">
+                    <h3 class="side-rules-title">IED désamorcés</h3>
+                    <div class="rules-content-box" style="text-align: center; padding: 10px; min-height: auto;">
+                        <div style="font-size: 22px; color: var(--accent-yellow); font-weight: bold;" id="usageCounterDisplay">0</div>
+                        <div style="font-size: 9px; color: var(--text-dim); margin-top: 4px;">IED désamorcée(s)</div>
+                        <button onclick="resetCompteur()" style="margin-top: 8px; padding: 6px; font-size: 9px; background: #552222; border-color: #aa3333;">Reset</button>
+                    </div>
+                </div>
+
+                <div class="side-rules-panel rules-container" id="sideRulesContainer">
+                    <h3 class="side-rules-title">Règles Correspondantes</h3>
+                    <div class="rules-content-box" id="sideRulesContent">
+                        > En attente d'exécution...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Suppression -->
+<div class="modal-overlay" id="passwordModal">
+    <div class="modal-window">
+        <div class="modal-title">AUTORISATION REQUISE</div>
+        <div class="modal-text">Entrez le mot de passe administrateur :</div>
+        <input type="password" class="modal-input" id="adminPassword" placeholder="Mot de passe" onkeydown="if(event.key === 'Enter') confirmDeletion()">
+        <div class="modal-buttons">
+            <button class="modal-btn" onclick="confirmDeletion()">VALIDER</button>
+            <button class="modal-btn" onclick="closePasswordModal()">ANNULER</button>
+        </div>
+        <div class="modal-error" id="modalError">Mot de passe incorrect.</div>
+    </div>
+</div>
+
+<script>
+let audioCtx = null;
+let currentArchiveIndex = null;
+const correctAdminPassword = "BOOM";
+
+const operatorList = [
+    "GCA-1 : Zero Azur",
+    "GCA-2 : Matt du 83",
+    "GCA-3 : Wolf",
+    "GCA-4 : Nico",
+    "GCA-5 : Brindas",
+    "GCA-6 : Devil",
+    "GCA-7 : Antoine",
+    "GCA-8 : Baguettini",
+    "GCA-9 : Libre",
+    "GCA-10 : Libre"
+];
+
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
+function playSound(type) {
+    try {
+        initAudio();
+        if (!audioCtx) return;
+        let now = audioCtx.currentTime;
+
+        if (type === 'click') {
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, now);
+            gain.gain.setValueAtTime(0.03, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+            osc.start(now);
+            osc.stop(now + 0.04);
+        } else if (type === 'success' || type === 'cut') {
+            let bufferSize = audioCtx.sampleRate * 0.06;
+            let buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            let data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
+            let noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            let filter = audioCtx.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.setValueAtTime(1800, now);
+            let noiseGain = audioCtx.createGain();
+            noiseGain.gain.setValueAtTime(0.2, now);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+            noise.connect(filter);
+            filter.connect(noiseGain);
+            noiseGain.connect(audioCtx.destination);
+            noise.start(now);
+
+            let osc = audioCtx.createOscillator();
+            let oscGain = audioCtx.createGain();
+            osc.connect(oscGain);
+            oscGain.connect(audioCtx.destination);
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(3200, now);
+            osc.frequency.exponentialRampToValueAtTime(400, now + 0.05);
+
+            oscGain.gain.setValueAtTime(0.12, now);
+            oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+            osc.start(now);
+            osc.stop(now + 0.05);
+
+            setTimeout(() => {
+                if (!audioCtx) return;
+                let t = audioCtx.currentTime;
+                let osc3 = audioCtx.createOscillator();
+                let gain3 = audioCtx.createGain();
+                osc3.connect(gain3);
+                gain3.connect(audioCtx.destination);
+                
+                osc3.type = 'sine';
+                osc3.frequency.setValueAtTime(587.33, t);
+                osc3.frequency.setValueAtTime(880, t + 0.08);
+
+                gain3.gain.setValueAtTime(0.05, t);
+                gain3.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+
+                osc3.start(t);
+                osc3.stop(t + 0.2);
+            }, 70);
+
+        } else if (type === 'error') {
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.setValueAtTime(100, now + 0.1);
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+            osc.start(now);
+            osc.stop(now + 0.25);
+        }
+    } catch(e) {}
+}
+
+function getCurrentMonday() {
+    let d = new Date();
+    let day = d.getDay();
+    let diff = d.getDate() - day + (day == 0 ? -6 : 1);
+    let monday = new Date(d.setDate(diff));
+    return monday.toISOString().split('T')[0];
+}
+
+function verifierResetHebdomadaire() {
+    let currentMonday = getCurrentMonday();
+    let lastMonday = localStorage.getItem('eod_last_monday');
+    if (lastMonday !== currentMonday) {
+        operatorList.forEach(op => {
+            localStorage.setItem('eod_weekly_count_' + op.toLowerCase(), 0);
+        });
+        localStorage.setItem('eod_last_monday', currentMonday);
+    }
+}
+
+function getSelectedOperator() {
+    let activePage = document.querySelector('.page-section.active');
+    let selId = 'operatorName2';
+    if (activePage && activePage.id === 'page3') selId = 'operatorName3';
+    let sel = document.getElementById(selId);
+    return sel ? sel.value : "GCA-1 : Zero Azur";
+}
+
+function getOperatorKey() {
+    let op = getSelectedOperator();
+    return 'eod_count_' + op.toLowerCase();
+}
+
+function getWeeklyOperatorKey() {
+    let op = getSelectedOperator();
+    return 'eod_weekly_count_' + op.toLowerCase();
+}
+
+function enregistrerLog(typeIED) {
+    let opName = getSelectedOperator();
+    let logs = JSON.parse(localStorage.getItem('eod_logs') || '[]');
+    logs.unshift({
+        date: new Date().toLocaleString('fr-FR'),
+        operator: opName,
+        type: typeIED
+    });
+    if (logs.length > 100) logs.pop();
+    localStorage.setItem('eod_logs', JSON.stringify(logs));
+}
+
+function incrementerCompteur(typeIED) {
+    verifierResetHebdomadaire();
+    let key = getOperatorKey();
+    let count = parseInt(localStorage.getItem(key)) || 0;
+    count++;
+    localStorage.setItem(key, count);
+
+    let weeklyKey = getWeeklyOperatorKey();
+    let weeklyCount = parseInt(localStorage.getItem(weeklyKey)) || 0;
+    weeklyCount++;
+    localStorage.setItem(weeklyKey, weeklyCount);
+
+    enregistrerLog(typeIED);
+    chargerCompteursVisuels();
+}
+
+function chargerCompteursVisuels() {
+    verifierResetHebdomadaire();
+    let key = getOperatorKey();
+    let count = parseInt(localStorage.getItem(key)) || 0;
+    let disp = document.getElementById('usageCounterDisplay');
+    if(disp) disp.innerText = count;
+}
+
+function changerOperateur(sourceId) {
+    playSound('click');
+    let val = document.getElementById(sourceId).value;
+    ['operatorName2', 'operatorName3'].forEach(id => {
+        let el = document.getElementById(id);
+        if (el && el.value !== val) el.value = val;
+    });
+    chargerCompteursVisuels();
+}
+
+function resetCompteur() {
+    playSound('click');
+    localStorage.setItem(getOperatorKey(), 0);
+    localStorage.setItem(getWeeklyOperatorKey(), 0);
+    chargerCompteursVisuels();
+}
+
+function chargerStatsGlobales() {
+    verifierResetHebdomadaire();
+    let box = document.getElementById('globalStatsBox');
+    let html = "<table style='width:100%; border-collapse: collapse; font-size: 11px;'>";
+    html += "<tr style='border-bottom: 1px solid var(--border-tactical); color: var(--accent-orange);'><th style='text-align:left; padding: 4px;'>Op.</th><th style='text-align:right; padding: 4px;'>Hebdo</th><th style='text-align:right; padding: 4px;'>Total</th></tr>";
+    
+    let totalHebdo = 0, totalGeneral = 0;
+    operatorList.forEach(op => {
+        let count = parseInt(localStorage.getItem('eod_count_' + op.toLowerCase())) || 0;
+        let weeklyCount = parseInt(localStorage.getItem('eod_weekly_count_' + op.toLowerCase())) || 0;
+        totalGeneral += count;
+        totalHebdo += weeklyCount;
+        html += `<tr style='border-bottom: 1px dotted #22331c;'><td style='padding: 4px;'>${op}</td><td style='text-align:right; padding: 4px; color: var(--accent-orange);'>${weeklyCount}</td><td style='text-align:right; padding: 4px; color: var(--accent-yellow);'>${count}</td></tr>`;
+    });
+    html += `<tr style='border-top: 2px solid var(--border-tactical); font-weight: bold;'><td style='padding: 6px; color: var(--accent-orange);'>TOTAL</td><td style='padding: 6px; text-align:right; color: var(--accent-orange);'>${totalHebdo}</td><td style='text-align:right; padding: 6px; color: var(--accent-yellow);'>${totalGeneral}</td></tr>`;
+    html += "</table>";
+    box.innerHTML = html;
+}
+
+function initialiserFiltreLogs() {
+    let select = document.getElementById('logFilter');
+    let currentValue = select.value;
+    select.innerHTML = '<option value="ALL">Tous les opérateurs</option>';
+    operatorList.forEach(op => {
+        select.innerHTML += `<option value="${op}">${op}</option>`;
+    });
+    select.value = currentValue;
+}
+
+function chargerLogs() {
+    initialiserFiltreLogs();
+    let filter = document.getElementById('logFilter').value;
+    let logs = JSON.parse(localStorage.getItem('eod_logs') || '[]');
+    let box = document.getElementById('logsBox');
+
+    let html = "<table style='width:100%; border-collapse: collapse; font-size: 10px;'>";
+    html += "<tr style='border-bottom: 1px solid var(--border-tactical); color: var(--accent-orange);'><th style='text-align:left; padding: 4px;'>Date</th><th style='text-align:left; padding: 4px;'>Op.</th><th style='text-align:left; padding: 4px;'>Type</th></tr>";
+    
+    let filtered = logs.filter(log => filter === 'ALL' || log.operator === filter);
+    if (filtered.length === 0) {
+        html += `<tr><td colspan='3' style='text-align:center; padding: 10px; color: var(--text-dim);'>Aucun log.</td></tr>`;
+    } else {
+        filtered.forEach(log => {
+            html += `<tr style='border-bottom: 1px dotted #22331c;'><td style='padding: 4px; color: var(--text-dim);'>${log.date}</td><td style='padding: 4px;'>${log.operator}</td><td style='padding: 4px; color: var(--accent-yellow);'>${log.type}</td></tr>`;
+        });
+    }
+    html += "</table>";
+    box.innerHTML = html;
+}
+
+function filtrerLogs() { chargerLogs(); }
+function effacerLogs() { localStorage.removeItem('eod_logs'); chargerLogs(); }
+
+function verifierMotDePasse() {
+    playSound('click');
+    let pwd = document.getElementById('pagePassword').value;
+    if (pwd === "EOD4EVER") {
+        document.getElementById('authContainer').style.display = 'none';
+        document.getElementById('briefingAdminContent').style.display = 'block';
+        chargerBriefingActuel();
+    } else {
+        playSound('error');
+        document.getElementById('authError').innerText = "● Mot de passe incorrect.";
+    }
+}
+
+function sauvegarderBriefing() {
+    let briefing = {
+        title: document.getElementById('briefTitle').value,
+        date: document.getElementById('briefDate').value,
+        leader: document.getElementById('briefLeader').value,
+        context: document.getElementById('briefContext').value,
+        objectives: document.getElementById('briefObjectives').value,
+        gear: document.getElementById('briefGear').value,
+        comms: document.getElementById('briefComms').value
+    };
+    localStorage.setItem('eod_briefing_current', JSON.stringify(briefing));
+}
+
+function chargerBriefingActuel() {
+    let saved = localStorage.getItem('eod_briefing_current');
+    if (saved) {
+        try {
+            let b = JSON.parse(saved);
+            if (b.title) document.getElementById('briefTitle').value = b.title;
+            if (b.date) document.getElementById('briefDate').value = b.date;
+            if (b.leader) document.getElementById('briefLeader').value = b.leader;
+            if (b.context) document.getElementById('briefContext').value = b.context;
+            if (b.objectives) document.getElementById('briefObjectives').value = b.objectives;
+            if (b.gear) document.getElementById('briefGear').value = b.gear;
+            if (b.comms) document.getElementById('briefComms').value = b.comms;
+        } catch(e) {}
+    }
+}
+
+function resetBriefing() {
+    localStorage.removeItem('eod_briefing_current');
+    document.getElementById('briefTitle').value = "Opération Clean Sweep";
+    document.getElementById('briefDate').value = "";
+    let status = document.getElementById('briefingStatus');
+    status.innerText = "● Réinitialisé.";
+    setTimeout(() => { status.innerText = ""; }, 2000);
+}
+
+function chargerArchivesBriefings() {
+    let logListContainer = document.getElementById('briefing-log-list');
+    let savedBriefings = JSON.parse(localStorage.getItem('eod_briefings')) || [];
+
+    if (savedBriefings.length === 0) {
+        savedBriefings = [{
+            id: 1,
+            date: "2026-06-01 à 08:30",
+            title: "Opération Clean Sweep",
+            leader: "GCA-1 : Zero Azur",
+            context: "Zone urbaine contaminée...",
+            objectives: "1. Infiltration\n2. Sécurisation",
+            gear: "- Détecteurs",
+            comms: "- Radio 1"
+        }];
+        localStorage.setItem('eod_briefings', JSON.stringify(savedBriefings));
+    }
+
+    logListContainer.innerHTML = '';
+    savedBriefings.forEach((b, index) => {
+        let item = document.createElement('div');
+        item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 6px; margin-bottom: 4px; border-bottom: 1px dotted var(--border-tactical); cursor: pointer;';
+        item.innerHTML = `<div style="flex-grow:1;"><div style="font-size: 8px; color: var(--text-dim);">${b.date || ''}</div><div style="font-size: 10px; color: var(--accent-yellow); font-weight: bold;">${b.title}</div></div>`;
+        item.onclick = () => afficherDetailsBriefing(b);
+
+        let deleteBtn = document.createElement('button');
+        deleteBtn.innerHTML = '✕';
+        deleteBtn.style.cssText = 'width: 18px; height: 18px; padding: 0; background: #552222; border: 1px solid #aa3333; color: white; font-size: 9px; cursor: pointer;';
+        deleteBtn.onclick = (e) => { e.stopPropagation(); openPasswordModal(index); };
+        item.appendChild(deleteBtn);
+        logListContainer.appendChild(item);
+    });
+
+    if (savedBriefings.length > 0) afficherDetailsBriefing(savedBriefings[0]);
+}
+
+function openPasswordModal(index) {
+    currentArchiveIndex = index;
+    document.getElementById('adminPassword').value = '';
+    document.getElementById('modalError').style.display = 'none';
+    document.getElementById('passwordModal').style.display = 'flex';
+}
+
+function closePasswordModal() {
+    document.getElementById('passwordModal').style.display = 'none';
+    currentArchiveIndex = null;
+}
+
+function confirmDeletion() {
+    if (document.getElementById('adminPassword').value === correctAdminPassword) {
+        let savedBriefings = JSON.parse(localStorage.getItem('eod_briefings')) || [];
+        if (currentArchiveIndex !== null) {
+            savedBriefings.splice(currentArchiveIndex, 1);
+            localStorage.setItem('eod_briefings', JSON.stringify(savedBriefings));
+            chargerArchivesBriefings();
+        }
+        closePasswordModal();
+    } else {
+        document.getElementById('modalError').style.display = 'block';
+    }
+}
+
+function afficherDetailsBriefing(b) {
+    document.getElementById('publicBriefingView').innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="background: #0c1209; border: 1px solid var(--border-tactical); padding: 8px;">
+                <div style="font-size: 9px; color: var(--accent-orange); font-weight: bold;">MISSION</div>
+                <div style="font-size: 13px; color: var(--accent-yellow); font-weight: bold;">${b.title || 'N/A'}</div>
+                <div style="font-size: 9px; color: var(--text-dim); margin-top: 2px;">H-Hour : ${b.date ? b.date.replace('T', ' à ') : 'Non défini'} | Lead : ${b.leader || 'N/A'}</div>
+            </div>
+            <div style="background: #0c1209; border: 1px solid var(--border-tactical); padding: 8px;">
+                <div style="font-size: 9px; color: var(--accent-orange); font-weight: bold;">CONTEXTE TACTIQUE (SITREP)</div>
+                <div style="font-size: 11px; color: #a8bfa0; white-space: pre-line; margin-top: 3px;">${b.context || 'Aucun contexte.'}</div>
+            </div>
+            <div style="background: #0c1209; border: 1px solid var(--border-tactical); padding: 8px;">
+                <div style="font-size: 9px; color: var(--accent-orange); font-weight: bold;">OBJECTIFS PRINCIPAUX</div>
+                <div style="font-size: 11px; color: #a8bfa0; white-space: pre-line; margin-top: 3px;">${b.objectives || 'Aucun objectif.'}</div>
+            </div>
+            <div style="background: #0c1209; border: 1px solid var(--border-tactical); padding: 8px;">
+                <div style="font-size: 9px; color: var(--accent-orange); font-weight: bold;">MATÉRIEL SPÉCIFIQUE</div>
+                <div style="font-size: 11px; color: #a8bfa0; white-space: pre-line; margin-top: 3px;">${b.gear || 'Aucun matériel.'}</div>
+            </div>
+            <div style="background: #0c1209; border: 1px solid var(--border-tactical); padding: 8px;">
+                <div style="font-size: 9px; color: var(--accent-orange); font-weight: bold;">COMMUNICATIONS</div>
+                <div style="font-size: 11px; color: #a8bfa0; white-space: pre-line; margin-top: 3px;">${b.comms || 'Aucune consigne.'}</div>
+            </div>
+        </div>`;
+}
+
+function envoyerBriefing() {
+    sauvegarderBriefing();
+    let newBriefing = {
+        id: Date.now(),
+        date: document.getElementById('briefDate').value || new Date().toISOString().slice(0, 16),
+        title: document.getElementById('briefTitle').value,
+        leader: document.getElementById('briefLeader').value,
+        context: document.getElementById('briefContext').value,
+        objectives: document.getElementById('briefObjectives').value,
+        gear: document.getElementById('briefGear').value,
+        comms: document.getElementById('briefComms').value
+    };
+    let savedBriefings = JSON.parse(localStorage.getItem('eod_briefings')) || [];
+    savedBriefings.unshift(newBriefing);
+    localStorage.setItem('eod_briefings', JSON.stringify(savedBriefings));
+    
+    let status = document.getElementById('briefingStatus');
+    status.innerText = "● Briefing publié avec succès !";
+    setTimeout(() => { status.innerText = ""; }, 2500);
+    
+    changerPage(4);
+}
+
+function changerPage(num) {
+    playSound('click');
+    for(let i = 1; i <= 6; i++) {
+        let pageEl = document.getElementById('page' + i);
+        let btnEl = document.getElementById('btn-page' + i);
+        if(pageEl) pageEl.classList.remove('active');
+        if(btnEl) btnEl.classList.remove('active');
+    }
+    document.getElementById('page' + num).classList.add('active');
+    document.getElementById('btn-page' + num).classList.add('active');
+
+    if (num === 4) chargerArchivesBriefings();
+    if (num === 5) { chargerStatsGlobales(); chargerLogs(); }
+    if (num === 6) {
+        document.getElementById('pagePassword').value = "";
+        document.getElementById('authContainer').style.display = 'block';
+        document.getElementById('briefingAdminContent').style.display = 'none';
+    }
+
+    chargerCompteursVisuels();
+
+    let rightColumn = document.getElementById('rightColumnContainer');
+    if (num === 2 || num === 3) {
+        rightColumn.style.display = 'block';
+    } else {
+        rightColumn.style.display = 'none';
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    chargerCompteursVisuels();
+    chargerBriefingActuel();
+});
+
+function calculerBombeTuyau() {
+    playSound('click');
+    incrementerCompteur('IED Tuyaux');
+    let resultatDiv = document.getElementById('resultat-pipe');
+    let sideRulesDiv = document.getElementById('sideRulesContent');
+    resultatDiv.innerHTML = "⏳ Analyse...";
+    
+    setTimeout(() => {
+        let pvc = parseInt(document.getElementById('pvc').value) || 0;
+        let lot = parseInt(document.getElementById('lot').value) || 0;
+        let rev = parseInt(document.getElementById('rev').value) || 0;
+        let swA = parseInt(document.getElementById('swA').value) || 0;
+        let swB = parseInt(document.getElementById('swB').value) || 0;
+        let swC = parseInt(document.getElementById('swC').value) || 0;
+        let sommeTotal = pvc + lot + rev + swA + swB + swC - 8;
+
+        resultatDiv.innerHTML = `<strong>💣 SOMME : ${sommeTotal}</strong>`;
+        sideRulesDiv.innerHTML = `<div class='rule-entry'>Résultat brut : ${sommeTotal}</div>`;
+    }, 600);
+}
+
+function lancerAnalyse() {
+    playSound('click');
+    incrementerCompteur('IED Cable');
+    let resultatDiv = document.getElementById('resultat');
+    let sideRulesDiv = document.getElementById('sideRulesContent');
+
+    resultatDiv.innerHTML = "⏳ Analyse de la matrice de câblage en cours (1s)...";
+    sideRulesDiv.innerHTML = "<div class='rule-entry'><strong>[Traitement]</strong><br>Analyse des liaisons en cours...</div>";
+
+    setTimeout(() => {
+        let r = document.getElementById('rouge').value;
+        let bl = document.getElementById('bleu').value;
+        let j = document.getElementById('jaune').value;
+        let n = document.getElementById('noir').value;
+
+        let solutions = [];
+
+        let compteScorched = (r === 'U') + (bl === 'U') + (j === 'U') + (n === 'U');
+        let compteLoose = (r === 'M') + (bl === 'M') + (j === 'M') + (n === 'M');
+
+        if (r === 'E' && j === 'M') {
+            solutions.push({
+                action: "✂️ ORDRE : Coupez le fil NOIR (⚫)",
+                rule: "[Règle 1] Rouge (Frayed) + Jaune (Loose) => Couper le fil NOIR (⚫)"
+            });
+        }
+
+        if (r !== 'M' && (bl === 'N/A' || bl === 'B') && (j === 'N/A' || j === 'B') && (n === 'N/A' || n === 'B')) {
+            solutions.push({
+                action: "✂️ ORDRE : Coupez le fil ROUGE (🔴)",
+                rule: "[Règle 2] Rouge (Sauf Loose) + Bleu/Jaune/Noir (N/A ou Good Condition) => Couper le fil ROUGE (🔴)"
+            });
+        }
+
+        if (bl === 'U' && j === 'B') {
+            solutions.push({
+                action: "✂️ ORDRE : Coupez le fil JAUNE (🟡)",
+                rule: "[Règle 3] Bleu (Scorched) + Jaune (Good Condition) => Couper le fil JAUNE (🟡)"
+            });
+        }
+
+        if (n === 'M') {
+            solutions.push({
+                action: "✂️ ORDRE : Coupez le fil BLEU (🔵)",
+                rule: "[Règle 4] Noir (Loose) + Rouge/Bleu/Jaune (N/A ou Frayed) => Couper le fil BLEU (🔵)"
+            });
+        }
+
+        if (r === 'E' && bl === 'M' && j === 'B' && n === 'M') {
+            solutions.push({
+                action: "✂️ ORDRE : Coupez le fil ROUGE (🔴)",
+                rule: "[Règle 5] Rouge (Frayed) + Bleu (Loose) + Jaune (Good Condition) + Noir (Loose) => Couper le fil ROUGE (🔴)"
+            });
+        }
+
+        if (r === 'M' && n === 'B') {
+            solutions.push({
+                action: "✂️ ORDRE : Coupez le fil BLEU (🔵)",
+                rule: "[Règle 6] Rouge (Loose) + Noir (Good Condition) => Couper le fil BLEU (🔵)"
+            });
+        }
+
+        if (compteScorched === 3) {
+            solutions.push({
+                action: "✂️ ORDRE : Coupez le fil JAUNE (🟡)",
+                rule: "[Règle 7] Exactement 3 fils Scorched (Brûlés) => Couper le fil JAUNE (🟡)"
+            });
+        }
+
+        if (r === 'M' && bl === 'B' && j === 'E' && n === 'U') {
+            solutions.push({
+                action: "✂️ ORDRE : Coupez le fil NOIR (⚫)",
+                rule: "[Règle 8] Rouge (Loose) + Bleu (Good Condition) + Jaune (Frayed) + Noir (Scorched) => Couper le fil NOIR (⚫)"
+            });
+        }
+
+        if (r !== 'B' && bl !== 'B' && j !== 'B' && n !== 'B') {
+            solutions.push({
+                action: "✂️ ORDRE : Coupez le fil NOIR (⚫)",
+                rule: "[Règle 9] Tous les fils non-conformes (Not in Good Condition) => Couper le fil NOIR (⚫)"
+            });
+        }
+
+        if (r === 'U' && compteLoose <= 1) {
+            solutions.push({
+                action: "✂️ ORDRE : Coupez le fil BLEU (🔵)",
+                rule: "[Règle 10] Rouge (Scorched) + Maximum 1 fil Loose (Mal branché) => Couper le fil BLEU (🔵)"
+            });
+        }
+
+        if (r === 'B' && j === 'U') {
+            solutions.push({
+                action: "✂️ ORDRE : Coupez le fil NOIR (⚫)",
+                rule: "[Règle 11] Rouge (Good Condition) + Jaune (Scorched) => Couper le fil NOIR (⚫)"
+            });
+        }
+
+        if (bl === 'E' && n === 'U') {
+            solutions.push({
+                action: "✂️ ORDRE : Coupez le fil ROUGE (🔴)",
+                rule: "[Règle 12] Bleu (Frayed) + Noir (Scorched) => Couper le fil ROUGE (🔴)"
+            });
+        }
+
+        if (r === 'M' && compteScorched <= 2 && n !== 'E') {
+            solutions.push({
+                action: "✂️ ORDRE : Coupez le fil JAUNE (🟡)",
+                rule: "[Règle 13] Rouge (Loose) + Max 2 Scorched + Noir non-effiloché => Couper le fil JAUNE (🟡)"
+            });
+        }
+
+        if (r === 'B' && bl !== 'B' && j === 'E' && n === 'M') {
+            solutions.push({
+                action: "✂️ ORDRE : Coupez le fil BLEU (🔵)",
+                rule: "[Règle 14] Rouge (Good) + Bleu (Not Good) + Jaune (Frayed) + Noir (Loose) => Couper le fil BLEU (🔵)"
+            });
+        }
+
+        if (r !== 'E' && bl === 'M' && j === 'B') {
+            solutions.push({
+                action: "✂️ ORDRE : Coupez le fil ROUGE (🔴)",
+                rule: "[Règle 15] Rouge (Non-effiloché) + Bleu (Loose) + Jaune (Good Condition) => Couper le fil ROUGE (🔴)"
+            });
+        }
+
+        if (r === 'E' && bl === 'M' && j === 'U') {
+            solutions.push({
+                action: "✂️ ORDRE : Coupez le fil JAUNE (🟡)",
+                rule: "[Règle 16] Rouge (Frayed) + Bleu (Loose) + Jaune (Scorched) => Couper le fil JAUNE (🟡)"
+            });
+        }
+
+        if (r === 'B' && bl === 'B' && j === 'B' && n === 'B') {
+            solutions.push({
+                action: "🎲 BONNE CHANCE : Tous les fils sont en Bon état",
+                rule: "[Règle 17] Tous les fils en Good Condition => Bonne chance"
+            });
+        }
+
+        if (solutions.length === 0) {
+            playSound('error');
+            resultatDiv.innerHTML = "🎲 ALERTE : Aucune correspondance - Procédure Aléatoire d'Urgence";
+            sideRulesDiv.innerHTML = "<div class='rule-entry'><strong>[Règle d'Urgence]</strong><br>Aucune correspondance standard trouvée dans la matrice.</div>";
+            return;
+        }
+
+        playSound('cut');
+        let mainHtml = "<strong>🔎 " + solutions.length + " solution(s) identifiée(s) :</strong><ul>";
+        let sideHtml = "";
+
+        for (let i = 0; i < solutions.length; i++) {
+            mainHtml += "<li>" + solutions[i].action + "</li>";
+            sideHtml += "<div class='rule-entry'><strong>Solution " + (i + 1) + " :</strong><br>" + solutions[i].rule + "</div>";
+        }
+        mainHtml += "</ul>";
+
+        resultatDiv.innerHTML = mainHtml;
+        sideRulesDiv.innerHTML = sideHtml;
+    }, 1000);
+}
+</script>
+
+</body>
+</html>
